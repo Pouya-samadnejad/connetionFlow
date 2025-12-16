@@ -44,7 +44,7 @@ export default function AnimatedBackground() {
         className="
           absolute 
           top-[30%] right-[5%] 
-          h-[200px] w-[200px] sm:h-[300px] sm:w-[300px] md:h-[400px] md:w-[400px]
+          h-50 w-50 sm:h-75 sm:w-[300px] md:h-[400px] md:w-[400px]
           rounded-full blur-[70px] sm:blur-[100px]
           bg-[#FDB813]
         "
@@ -65,8 +65,8 @@ export default function AnimatedBackground() {
         }}
         className="
           absolute 
-          top-1/2 right-1/4 
-          h-[200px] w-[200px] sm:h-[300px] sm:w-[300px] md:h-[400px] md:w-[400px]
+          top-1/2 right-1/3 
+          h-50 w-50 sm:h-75 sm:w-75 md:h-100 md:w-100
           rounded-full blur-[80px] sm:blur-[110px]
           bg-[#a50d0d]
         "

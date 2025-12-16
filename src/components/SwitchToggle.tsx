@@ -11,9 +11,9 @@ export default function SwitchToggle() {
       `}
       aria-label="Toggle Dark Mode"
     >
-      <span>حالت فعال</span>
+      <span>حالت نمایشی</span>
 
-      <span>حالت غیر فعال</span>
+      <span>حالت عادی</span>
 
       <motion.div
         className="h-8 w-8 rounded-full bg-white shadow-sm z-10"

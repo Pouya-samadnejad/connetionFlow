@@ -25,7 +25,7 @@ export default function FirstMonitor() {
       <div>
         <SwitchToggle />
       </div>
-      <div className="flex items-center justify-center h-full px-20">
+      <div className="flex items-center justify-center h-full px-20 ">
         <Card glowColor="#FFCC00">
           <div className="flex items-center gap-2">
             <input
