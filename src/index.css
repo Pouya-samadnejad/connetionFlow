@@ -1,0 +1,6 @@
+@import "../src/assets/fonts/fontFace.css";
+@import "tailwindcss";
+* {
+  font-family: "IRANYekanXFaNum", serifsans;
+  direction: rtl;
+}
