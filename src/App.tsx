@@ -1,4 +1,4 @@
-import { Link, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import "./App.css";
 import FirstMonitor from "./Pages/FirstMonitor";
 import SecondMonitor from "./Pages/SecondMonitor";
@@ -9,10 +9,7 @@ function App() {
     <>
       <AnimatedBackground />
       <div>
-        <div
-          className="app-container relative z-10"
-          style={{ padding: "20px" }}
-        >
+        <div className="app-container relative z-10">
           <Routes>
             <Route path="/" element={<FirstMonitor />} />
 
