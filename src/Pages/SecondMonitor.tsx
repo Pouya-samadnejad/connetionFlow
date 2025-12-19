@@ -84,7 +84,7 @@ export default function SecondMonitor() {
               fill="white"
             />
             <path d="M1351.52 73.0001V9.50006" stroke="white" strokeWidth="4" />
-            <circle cx="0" cy="0" r="10" fill="url(#paint0_linear_14_40)">
+            <g>
               <animateMotion
                 dur="7s"
                 repeatCount="indefinite"
@@ -95,38 +95,66 @@ export default function SecondMonitor() {
               >
                 <mpath href="#upper-path" />
               </animateMotion>
-            </circle>
+              <g transform="translate(-16, -12) scale(1)">
+                <path
+                  d="M29.0909 0H2.90909C1.30244 0 0 1.30244 0 2.90909V20.3636C0 21.9703 1.30244 23.2727 2.90909 23.2727H29.0909C30.6976 23.2727 32 21.9703 32 20.3636V2.90909C32 1.30244 30.6976 0 29.0909 0Z"
+                  fill="url(#paint0_linear_purple_card_2)"
+                />
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M29.0909 0H2.90909C2.52332 0 2.15223 0.0738135 1.79583 0.221441C1.43942 0.369069 1.12483 0.579272 0.852049 0.852054L13.943 13.943C14.2157 14.2157 14.5303 14.4259 14.8867 14.5735C15.2431 14.7212 15.6142 14.7951 16 14.7951C16.3857 14.7951 16.7568 14.7212 17.1133 14.5735C17.4696 14.4259 17.7842 14.2157 18.057 13.943L31.1479 0.852049C30.8752 0.57927 30.5606 0.369067 30.2042 0.22144C29.8478 0.0738131 29.4767 0 29.0909 0Z"
+                  fill="url(#paint1_linear_purple_card_2)"
+                />
+              </g>
+            </g>
             <defs>
               <linearGradient
-                id="paint0_linear_14_40"
-                x1="47.0001"
-                y1="216"
-                x2="47.0001"
-                y2="246"
+                id="paint0_linear_purple_card_2"
+                x1="16"
+                y1="0"
+                x2="16"
+                y2="23.2727"
                 gradientUnits="userSpaceOnUse"
               >
                 <stop stopColor="#8B5CF6" />
                 <stop offset="1" stopColor="#6B2AFF" />
               </linearGradient>
               <linearGradient
-                id="paint1_linear_yellow"
-                x1="0"
-                y1="272"
-                x2="0"
-                y2="302"
+                id="paint1_linear_purple_card_2"
+                x1="16.0002"
+                y1="0"
+                x2="16.0002"
+                y2="14.7951"
                 gradientUnits="userSpaceOnUse"
               >
-                <stop stopColor="#FFD900" />
-                <stop offset="1" stopColor="#FFA600" />
+                <stop stopColor="#c0affd" />
+                <stop offset="1" stopColor="#9163fd" />
+              </linearGradient>
+              <linearGradient
+                id="paint0_linear_card_2"
+                x1="16"
+                y1="0"
+                x2="16"
+                y2="23.2727"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop stopColor="#FAC227" />
+                <stop offset="1" stopColor="#FAA627" />
+              </linearGradient>
+              <linearGradient
+                id="paint1_linear_card_2"
+                x1="16.0002"
+                y1="0"
+                x2="16.0002"
+                y2="14.7951"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop stopColor="#FCE4B1" />
+                <stop offset="1" stopColor="#FFD272" />
               </linearGradient>
             </defs>
-            <ellipse
-              cx="0"
-              cy="0"
-              rx="10"
-              ry="10"
-              fill="url(#paint1_linear_yellow)"
-            >
+            <g>
               <animateMotion
                 dur="7s"
                 repeatCount="indefinite"
@@ -138,7 +166,19 @@ export default function SecondMonitor() {
               >
                 <mpath href="#lower-path" />
               </animateMotion>
-            </ellipse>
+              <g transform="translate(-16, -12) scale(1)">
+                <path
+                  d="M29.0909 0H2.90909C1.30244 0 0 1.30244 0 2.90909V20.3636C0 21.9703 1.30244 23.2727 2.90909 23.2727H29.0909C30.6976 23.2727 32 21.9703 32 20.3636V2.90909C32 1.30244 30.6976 0 29.0909 0Z"
+                  fill="url(#paint0_linear_card_2)"
+                />
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M29.0909 0H2.90909C2.52332 0 2.15223 0.0738135 1.79583 0.221441C1.43942 0.369069 1.12483 0.579272 0.852049 0.852054L13.943 13.943C14.2157 14.2157 14.5303 14.4259 14.8867 14.5735C15.2431 14.7212 15.6142 14.7951 16 14.7951C16.3857 14.7951 16.7568 14.7212 17.1133 14.5735C17.4696 14.4259 17.7842 14.2157 18.057 13.943L31.1479 0.852049C30.8752 0.57927 30.5606 0.369067 30.2042 0.22144C29.8478 0.0738131 29.4767 0 29.0909 0Z"
+                  fill="url(#paint1_linear_card_2)"
+                />
+              </g>
+            </g>
           </svg>
         </div>
         <div className="w"></div>

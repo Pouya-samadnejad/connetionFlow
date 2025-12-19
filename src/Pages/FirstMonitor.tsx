@@ -115,13 +115,7 @@ export default function FirstMonitor() {
               fill="white"
             />
             <path d="M73.4774 446V509.5" stroke="white" strokeWidth="4" />
-            <ellipse
-              cx="0"
-              cy="0"
-              rx="10"
-              ry="10"
-              fill="url(#paint0_linear_11_39)"
-            >
+            <g>
               <animateMotion
                 dur="7s"
                 repeatCount="indefinite"
@@ -132,8 +126,20 @@ export default function FirstMonitor() {
               >
                 <mpath href="#lower-path" />
               </animateMotion>
-            </ellipse>
-            <circle cx="0" cy="0" r="10" fill="url(#paint1_linear_purple)">
+              <g transform="translate(-16, 10) scale(1) rotate(180)">
+                <path
+                  d="M29.0909 0H2.90909C1.30244 0 0 1.30244 0 2.90909V20.3636C0 21.9703 1.30244 23.2727 2.90909 23.2727H29.0909C30.6976 23.2727 32 21.9703 32 20.3636V2.90909C32 1.30244 30.6976 0 29.0909 0Z"
+                  fill="url(#paint0_linear_card_1)"
+                />
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M29.0909 0H2.90909C2.52332 0 2.15223 0.0738135 1.79583 0.221441C1.43942 0.369069 1.12483 0.579272 0.852049 0.852054L13.943 13.943C14.2157 14.2157 14.5303 14.4259 14.8867 14.5735C15.2431 14.7212 15.6142 14.7951 16 14.7951C16.3857 14.7951 16.7568 14.7212 17.1133 14.5735C17.4696 14.4259 17.7842 14.2157 18.057 13.943L31.1479 0.852049C30.8752 0.57927 30.5606 0.369067 30.2042 0.22144C29.8478 0.0738131 29.4767 0 29.0909 0Z"
+                  fill="url(#paint1_linear_card_1)"
+                />
+              </g>
+            </g>
+            <g>
               <animateMotion
                 dur="7s"
                 repeatCount="indefinite"
@@ -145,29 +151,63 @@ export default function FirstMonitor() {
               >
                 <mpath href="#upper-path" />
               </animateMotion>
-            </circle>
+              <g transform="translate(3, 12) scale(1) rotate(180)">
+                <path
+                  d="M29.0909 0H2.90909C1.30244 0 0 1.30244 0 2.90909V20.3636C0 21.9703 1.30244 23.2727 2.90909 23.2727H29.0909C30.6976 23.2727 32 21.9703 32 20.3636V2.90909C32 1.30244 30.6976 0 29.0909 0Z"
+                  fill="url(#paint0_linear_purple_card_1)"
+                />
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M29.0909 0H2.90909C2.52332 0 2.15223 0.0738135 1.79583 0.221441C1.43942 0.369069 1.12483 0.579272 0.852049 0.852054L13.943 13.943C14.2157 14.2157 14.5303 14.4259 14.8867 14.5735C15.2431 14.7212 15.6142 14.7951 16 14.7951C16.3857 14.7951 16.7568 14.7212 17.1133 14.5735C17.4696 14.4259 17.7842 14.2157 18.057 13.943L31.1479 0.852049C30.8752 0.57927 30.5606 0.369067 30.2042 0.22144C29.8478 0.0738131 29.4767 0 29.0909 0Z"
+                  fill="url(#paint1_linear_purple_card_1)"
+                />
+              </g>
+            </g>
             <defs>
               <linearGradient
-                id="paint0_linear_11_39"
-                x1="1365"
-                y1="259"
-                x2="1365"
-                y2="316"
+                id="paint0_linear_card_1"
+                x1="16"
+                y1="0"
+                x2="16"
+                y2="23.2727"
                 gradientUnits="userSpaceOnUse"
               >
-                <stop stopColor="#FFD900" />
-                <stop offset="1" stopColor="#FFA600" />
+                <stop stopColor="#FAC227" />
+                <stop offset="1" stopColor="#FAA627" />
               </linearGradient>
               <linearGradient
-                id="paint1_linear_purple"
-                x1="0"
-                y1="217"
-                x2="0"
-                y2="247"
+                id="paint1_linear_card_1"
+                x1="16.0002"
+                y1="0"
+                x2="16.0002"
+                y2="14.7951"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop stopColor="#FCE4B1" />
+                <stop offset="1" stopColor="#FFD272" />
+              </linearGradient>
+              <linearGradient
+                id="paint0_linear_purple_card_1"
+                x1="16"
+                y1="0"
+                x2="16"
+                y2="23.2727"
                 gradientUnits="userSpaceOnUse"
               >
                 <stop stopColor="#8B5CF6" />
                 <stop offset="1" stopColor="#6B2AFF" />
+              </linearGradient>
+              <linearGradient
+                id="paint1_linear_purple_card_1"
+                x1="16.0002"
+                y1="0"
+                x2="16.0002"
+                y2="14.7951"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop stopColor="#c0affd" />
+                <stop offset="1" stopColor="#9163fd" />
               </linearGradient>
             </defs>
           </svg>
