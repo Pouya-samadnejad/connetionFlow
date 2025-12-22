@@ -4,6 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: "./",
   plugins: [
     react({
       babel: {
@@ -12,4 +13,12 @@ export default defineConfig({
     }),
     tailwindcss(),
   ],
+  build: {
+    rollupOptions: {
+      input: {
+        page1: "page1/index.html",
+        page2: "page2/index.html",
+      },
+    },
+  },
 });

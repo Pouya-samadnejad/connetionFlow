@@ -7,7 +7,6 @@ import AnimatedBackground from "./components/AnimatedBackground";
 function App() {
   return (
     <>
-      <AnimatedBackground />
       <div>
         <div className="app-container relative z-10">
           <Routes>

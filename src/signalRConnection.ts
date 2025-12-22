@@ -1,15 +1,24 @@
 import * as signalR from "@microsoft/signalr";
 
-let connection: signalR.HubConnection | null = null;
+let connectionIN: signalR.HubConnection | null = null;
+let connectionOUT: signalR.HubConnection | null = null;
 
 export function getConnection() {
-  if (!connection) {
-    connection = new signalR.HubConnectionBuilder()
-      // TODO: اگر کار نکرد فقط این آدرس را با آدرس هاب خودت عوض کن
-      // مثلا: "http://192.168.20.202:5000/chathub" یا مشابه آن
-      .withUrl("http://192.168.20.202:5000/chathub")
+  if (!connectionIN) {
+    connectionIN = new signalR.HubConnectionBuilder()
+      .withUrl(window.apiHUB1)
       .withAutomaticReconnect()
       .build();
   }
-  return connection;
+  return connectionIN;
+}
+
+export function getConnection2() {
+  if (!connectionOUT) {
+    connectionOUT = new signalR.HubConnectionBuilder()
+      .withUrl(window.apiHUB2)
+      .withAutomaticReconnect()
+      .build();
+  }
+  return connectionOUT;
 }

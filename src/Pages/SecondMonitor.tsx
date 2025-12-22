@@ -1,66 +1,216 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Card from "../components/Card";
 import SwitchToggle from "../components/SwitchToggle";
-import { getConnection } from "../signalRConnection";
+import { getConnection2 } from "../signalRConnection";
+import secureZone from "../assets/SecureZone.PNG";
 
 export default function SecondMonitor() {
+  const time = 4000;
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<string[]>([]);
+  const [isRealTimeMonitoring, setIsRealTimeMonitoring] = useState(true);
+
+  const [activeSendAnimations, setActiveSendAnimations] = useState<number[]>(
+    []
+  );
+  const [activeReceiveAnimations, setActiveReceiveAnimations] = useState<
+    number[]
+  >([]);
+
+  const [lastMessage, setLastMessage] = useState<string>("");
+
+  const isRealTimeRef = useRef(isRealTimeMonitoring);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const prevSendAnimationsRef = useRef<number[]>([]);
+  const prevReceiveAnimationsRef = useRef<number[]>([]);
+  const sendAnimationCounterRef = useRef(0);
+  const receiveAnimationCounterRef = useRef(0);
+
+  const connection = getConnection2();
 
   useEffect(() => {
-    const connection = getConnection();
+    isRealTimeRef.current = isRealTimeMonitoring;
+  }, [isRealTimeMonitoring]);
+
+  // Force شروع انیمیشن‌های ارسال
+  useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const newAnimations = activeSendAnimations.filter(
+      (id) => !prevSendAnimationsRef.current.includes(id)
+    );
+
+    newAnimations.forEach((animationId) => {
+      const timer = setTimeout(() => {
+        const animateElement = document.getElementById(
+          `send-animation-motion-${animationId}`
+        ) as SVGAnimateMotionElement | null;
+        if (animateElement) {
+          animateElement.beginElement();
+        }
+      }, 50);
+      timers.push(timer);
+    });
+
+    prevSendAnimationsRef.current = activeSendAnimations;
+    return () => timers.forEach((timer) => clearTimeout(timer));
+  }, [activeSendAnimations]);
+
+  // Force شروع انیمیشن‌های دریافت
+  useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const newAnimations = activeReceiveAnimations.filter(
+      (id) => !prevReceiveAnimationsRef.current.includes(id)
+    );
+
+    newAnimations.forEach((animationId) => {
+      const timer = setTimeout(() => {
+        const animateElement = document.getElementById(
+          `receive-animation-motion-${animationId}`
+        ) as SVGAnimateMotionElement | null;
+        if (animateElement) {
+          animateElement.beginElement();
+        }
+      }, 50);
+      timers.push(timer);
+    });
+
+    prevReceiveAnimationsRef.current = activeReceiveAnimations;
+    return () => timers.forEach((timer) => clearTimeout(timer));
+  }, [activeReceiveAnimations]);
+
+  useEffect(() => {
+    const handleReceiveMessage = (msg: string) => {
+      if (isRealTimeRef.current) {
+        setLastMessage(msg);
+      } else {
+        receiveAnimationCounterRef.current += 1;
+        const newAnimationId = receiveAnimationCounterRef.current;
+        setActiveReceiveAnimations((prev) => [...prev, newAnimationId]);
+
+        setTimeout(() => {
+          setLastMessage(msg);
+          setActiveReceiveAnimations((prev) =>
+            prev.filter((id) => id !== newAnimationId)
+          );
+        }, time);
+      }
+    };
 
     async function start() {
       if (connection.state === "Disconnected") {
-        await connection.start();
+        try {
+          await connection.start();
+          console.log("Connection 2 Started");
+        } catch (err) {
+          console.error("Connection 2 failed", err);
+        }
       }
 
-      connection.on("ReceiveMessage", (msg: string) => {
-        setMessages((prev) => [...prev, msg]);
-      });
+      connection.off("ReceiveMessage", handleReceiveMessage);
+      connection.on("ReceiveMessage", handleReceiveMessage);
     }
 
     start();
 
     return () => {
-      connection.off("ReceiveMessage");
+      connection.off("ReceiveMessage", handleReceiveMessage);
     };
   }, []);
+
+  const startSendMessage = async (msgToSend: string) => {
+    if (connection.state === "Connected") {
+      try {
+        await connection.invoke("SendMessage", msgToSend);
+      } catch (err) {
+        console.error("Send failed", err);
+      }
+    }
+  };
 
   const handleSend = async () => {
     if (!message.trim()) return;
 
-    const connection = getConnection();
-    if (connection.state === "Connected") {
-      await connection.invoke("SendMessage", message);
-      setMessage("");
+    const currentMsg = message;
+
+    if (isRealTimeMonitoring) {
+      await startSendMessage(currentMsg);
+    } else {
+      sendAnimationCounterRef.current += 1;
+      const newAnimationId = sendAnimationCounterRef.current;
+      setActiveSendAnimations((prev) => [...prev, newAnimationId]);
+
+      setTimeout(async () => {
+        await startSendMessage(currentMsg);
+        setActiveSendAnimations((prev) =>
+          prev.filter((id) => id !== newAnimationId)
+        );
+      }, time);
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSend();
+    }
+  };
+  useEffect(() => {
+    const focusInput = () => {
+      inputRef.current?.focus();
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (document.activeElement as HTMLElement)?.tagName;
+
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+
+      if (e.key.length === 1) {
+        focusInput();
+      }
+    };
+
+    document.addEventListener("click", focusInput);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("click", focusInput);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
   return (
-    <div className="p-0">
-      <div className="h-40 flex items-center justify-between ml-50">
+    <div className="flex flex-col h-screen w-full pl-2 lg:pr-0  overflow-hidden">
+      {/* Header Section */}
+      <div className="h-40 flex items-center justify-between lg:pl-20  w-full md:mb-24 lg:mb-29 ">
         <Card
-          glowColor="#8B5CF6"
-          className="w-80 flex items-center justify-center h-30"
+          glowColor="#14E800"
+          className="w-80 flex items-center justify-center h-30 gap-10"
         >
-          <p className="text-2xl ">سپر بیرونی</p>
+          <p className="text-2xl font-bold">سپر درونی</p>
+          <div className="w-15 h-15 mb-2">
+            <img src={secureZone} alt="secure zone" />
+          </div>
         </Card>
         <SwitchToggle
-          fromColor="#8B5CF6"
-          toColor="#6B2AFF"
-          shadowColor="rgba(139, 92, 246, 0.45)"
+          value={!isRealTimeMonitoring} // تغییر initial به value
+          fromColor="#10C202"
+          toggle={(val) => setIsRealTimeMonitoring(!val)}
+          toColor="#0DA800"
+          shadowColor="rgba(20, 232, 0, 0.45)"
         />
       </div>
-      <div className="h-30" />
-      <div className="flex items-center h-full  ">
-        <div className="w-2/3 ml-2 ">
+
+      <div className="flex  items-center  h-full ">
+        {/* SVG Container - Responsive */}
+        <div className="flex-1 w-full max-w-[1500px]  flex items-center justify-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="1920"
-            height="519"
-            viewBox="0 0 900 519"
+            // تغییرات مهم برای ریسپانسیو بودن:
+            width="100%"
+            height="auto"
+            // viewBox بر اساس مختصات واقعی مسیرها (H1425) تنظیم شده است
+            viewBox="0 0 1425 519"
             fill="none"
+            // حفظ نسبت ابعاد تصویر
+            preserveAspectRatio="xMidYMid meet"
           >
             <path
               id="lower-path"
@@ -84,90 +234,150 @@ export default function SecondMonitor() {
               fill="white"
             />
             <path d="M1351.52 73.0001V9.50006" stroke="white" strokeWidth="4" />
-            <circle cx="0" cy="0" r="10" fill="url(#paint0_linear_14_40)">
-              <animateMotion
-                dur="7s"
-                repeatCount="indefinite"
-                rotate="auto"
-                keySplines="0.42 0 0.58 1"
-                keyTimes="0;1"
-                calcMode="spline"
+
+            {/* Send Animations */}
+            {activeSendAnimations.map((animationId) => (
+              <g
+                key={`send-animation-${animationId}`}
+                id={`send-animation-group-${animationId}`}
+                transform="translate(-70, -20) scale(2)"
               >
-                <mpath href="#upper-path" />
-              </animateMotion>
-            </circle>
+                <animateMotion
+                  id={`send-animation-motion-${animationId}`}
+                  dur={`${time / 1000}s`}
+                  repeatCount="1"
+                  rotate="auto"
+                  keySplines="0.42 0 0.58 1"
+                  keyTimes="0;1"
+                  calcMode="paced"
+                  fill="remove"
+                  begin="indefinite"
+                >
+                  <mpath href="#upper-path" />
+                </animateMotion>
+                <path
+                  d="M29.0909 0H2.90909C1.30244 0 0 1.30244 0 2.90909V20.3636C0 21.9703 1.30244 23.2727 2.90909 23.2727H29.0909C30.6976 23.2727 32 21.9703 32 20.3636V2.90909C32 1.30244 30.6976 0 29.0909 0Z"
+                  fill="url(#paint0_linear_purple_card_2)"
+                />
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M29.0909 0H2.90909C2.52332 0 2.15223 0.0738135 1.79583 0.221441C1.43942 0.369069 1.12483 0.579272 0.852049 0.852054L13.943 13.943C14.2157 14.2157 14.5303 14.4259 14.8867 14.5735C15.2431 14.7212 15.6142 14.7951 16 14.7951C16.3857 14.7951 16.7568 14.7212 17.1133 14.5735C17.4696 14.4259 17.7842 14.2157 18.057 13.943L31.1479 0.852049C30.8752 0.57927 30.5606 0.369067 30.2042 0.22144C29.8478 0.0738131 29.4767 0 29.0909 0Z"
+                  fill="url(#paint1_linear_purple_card_2)"
+                />
+              </g>
+            ))}
+
             <defs>
               <linearGradient
-                id="paint0_linear_14_40"
-                x1="47.0001"
-                y1="216"
-                x2="47.0001"
-                y2="246"
+                id="paint0_linear_purple_card_2"
+                x1="16"
+                y1="0"
+                x2="16"
+                y2="23.2727"
                 gradientUnits="userSpaceOnUse"
               >
                 <stop stopColor="#8B5CF6" />
                 <stop offset="1" stopColor="#6B2AFF" />
               </linearGradient>
               <linearGradient
-                id="paint1_linear_yellow"
-                x1="0"
-                y1="272"
-                x2="0"
-                y2="302"
+                id="paint1_linear_purple_card_2"
+                x1="16.0002"
+                y1="0"
+                x2="16.0002"
+                y2="14.7951"
                 gradientUnits="userSpaceOnUse"
               >
-                <stop stopColor="#FFD900" />
-                <stop offset="1" stopColor="#FFA600" />
+                <stop stopColor="#c0affd" />
+                <stop offset="1" stopColor="#9163fd" />
+              </linearGradient>
+              <linearGradient
+                id="paint0_linear_card_2"
+                x1="16"
+                y1="0"
+                x2="16"
+                y2="23.2727"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop stopColor="#29B4FA" />
+                <stop offset="1" stopColor="#29B4FA" />
+              </linearGradient>
+              <linearGradient
+                id="paint1_linear_card_2"
+                x1="16.0002"
+                y1="0"
+                x2="16.0002"
+                y2="14.7951"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop stopColor="#AFE6FD" />
+                <stop offset="1" stopColor="#70C8FF" />
               </linearGradient>
             </defs>
-            <ellipse
-              cx="0"
-              cy="0"
-              rx="10"
-              ry="10"
-              fill="url(#paint1_linear_yellow)"
-            >
-              <animateMotion
-                dur="7s"
-                repeatCount="indefinite"
-                rotate="auto"
-                keySplines="0.42 0 0.58 1"
-                keyTimes="0;1"
-                calcMode="spline"
-                keyPoints="1;0"
+
+            {/* Receive Animations */}
+            {activeReceiveAnimations.map((animationId) => (
+              <g
+                key={`receive-animation-${animationId}`}
+                id={`receive-animation-group-${animationId}`}
+                transform="translate(-65, -22) scale(2)"
               >
-                <mpath href="#lower-path" />
-              </animateMotion>
-            </ellipse>
+                <animateMotion
+                  id={`receive-animation-motion-${animationId}`}
+                  dur={`${time / 1000}s`}
+                  repeatCount="1"
+                  rotate="auto"
+                  keySplines="0.42 0 0.58 1"
+                  keyTimes="0;1"
+                  calcMode="paced"
+                  fill="remove"
+                  begin="indefinite"
+                  keyPoints="1;0"
+                >
+                  <mpath href="#lower-path" />
+                </animateMotion>
+                <path
+                  d="M29.0909 0H2.90909C1.30244 0 0 1.30244 0 2.90909V20.3636C0 21.9703 1.30244 23.2727 2.90909 23.2727H29.0909C30.6976 23.2727 32 21.9703 32 20.3636V2.90909C32 1.30244 30.6976 0 29.0909 0Z"
+                  fill="url(#paint0_linear_card_2)"
+                />
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M29.0909 0H2.90909C2.52332 0 2.15223 0.0738135 1.79583 0.221441C1.43942 0.369069 1.12483 0.579272 0.852049 0.852054L13.943 13.943C14.2157 14.2157 14.5303 14.4259 14.8867 14.5735C15.2431 14.7212 15.6142 14.7951 16 14.7951C16.3857 14.7951 16.7568 14.7212 17.1133 14.5735C17.4696 14.4259 17.7842 14.2157 18.057 13.943L31.1479 0.852049C30.8752 0.57927 30.5606 0.369067 30.2042 0.22144C29.8478 0.0738131 29.4767 0 29.0909 0Z"
+                  fill="url(#paint1_linear_card_2)"
+                />
+              </g>
+            ))}
           </svg>
         </div>
-        <div className="w"></div>
-        <Card glowColor="#8B5CF6" className="mr-28">
+
+        {/* Controls / Message Card */}
+        <Card glowColor="#14E800">
           <div className="flex items-center gap-2">
             <input
               type="text"
               placeholder="پیام خود را اینجا بنویسید..."
-              className="w-2/3 p-3 rounded-md bg-black/30 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              className="w-2/3 p-3 rounded-md bg-black/30 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-600"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
+              ref={inputRef}
             />
 
             <button
               onClick={handleSend}
-              className="h-11.5 w-1/3 py-2 text-xs bg-purple-500 text-black font-semibold rounded-md hover:bg-purple-600 transition-colors"
+              className="h-11.5 w-1/3 py-2 text-xs bg-green-600 text-black font-semibold rounded-md hover:bg-green-700 transition-colors cursor-pointer"
             >
               ارسال پیام
             </button>
           </div>
-          <div className="mt-3 min-h-25 overflow-auto p-3 rounded-md bg-black/20 border border-white/10 text-white space-y-2">
-            {messages.length === 0 ? (
+          <div className="mt-3 min-h-25 overflow-auto p-3 rounded-md bg-black/20 border border-white/10 text-white flex items-center justify-center">
+            {!lastMessage ? (
               <div className="text-sm text-white/50">هیچ پیامی وجود ندارد.</div>
             ) : (
-              messages.map((m, i) => (
-                <div key={i} className="text-sm">
-                  {m}
-                </div>
-              ))
+              <div className="text-2xl font-medium text-center animate-pulse">
+                {lastMessage}
+              </div>
             )}
           </div>
         </Card>
