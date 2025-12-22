@@ -1,6 +1,4 @@
-Since you are using the latest tech stack—React 19, the React Compiler, and Framer Motion—your README should reflect that high-performance edge. The React Compiler automatically optimizes re-renders, which is perfect for a high-frequency data app like this.
 
-Here is an updated, high-energy README.md for your project.
 
 🖥️ MonitorFlow: SignalR Visualizer
 A cutting-edge data visualization dashboard built with React 19 and the React Compiler. This application monitors and animates the flow of real-time data between dual-monitor interfaces using SignalR for low-latency synchronization.
