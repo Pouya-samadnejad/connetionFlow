@@ -275,7 +275,6 @@ export default function FirstMonitor() {
               fill="white"
             />
             <path d="M73.4774 446V509.5" stroke="white" strokeWidth="4" />
-<<<<<<< HEAD
 
             {/* Send Animation (Blue) */}
             {activeSendAnimations.map((animationId) => (
@@ -297,20 +296,6 @@ export default function FirstMonitor() {
                 >
                   <mpath href="#lower-path-1" />
                 </animateMotion>
-=======
-            <g>
-              <animateMotion
-                dur="7s"
-                repeatCount="indefinite"
-                rotate="auto"
-                keySplines="0.42 0 0.58 1"
-                keyTimes="0;1"
-                calcMode="spline"
-              >
-                <mpath href="#lower-path" />
-              </animateMotion>
-              <g transform="translate(-16, 10) scale(1) rotate(180)">
->>>>>>> 5bde97d1a61016a0e27e5d7204bd814c7e1e2e20
                 <path
                   d="M29.0909 0H2.90909C1.30244 0 0 1.30244 0 2.90909V20.3636C0 21.9703 1.30244 23.2727 2.90909 23.2727H29.0909C30.6976 23.2727 32 21.9703 32 20.3636V2.90909C32 1.30244 30.6976 0 29.0909 0Z"
                   fill="url(#paint0_linear_card_1)"
@@ -322,7 +307,6 @@ export default function FirstMonitor() {
                   fill="url(#paint1_linear_card_1)"
                 />
               </g>
-<<<<<<< HEAD
             ))}
 
             {/* Receive Animation (RED) */}
@@ -373,42 +357,16 @@ export default function FirstMonitor() {
                 <path
                   d="M29.0909 0H2.90909C1.30244 0 0 1.30244 0 2.90909V20.3636C0 21.9703 1.30244 23.2727 2.90909 23.2727H29.0909C30.6976 23.2727 32 21.9703 32 20.3636V2.90909C32 1.30244 30.6976 0 29.0909 0Z"
                   fill={`url(#paint0_linear_red_1_${animationId})`}
-=======
-            </g>
-            <g>
-              <animateMotion
-                dur="7s"
-                repeatCount="indefinite"
-                rotate="auto"
-                keySplines="0.42 0 0.58 1"
-                keyTimes="0;1"
-                calcMode="spline"
-                keyPoints="1;0"
-              >
-                <mpath href="#upper-path" />
-              </animateMotion>
-              <g transform="translate(3, 12) scale(1) rotate(180)">
-                <path
-                  d="M29.0909 0H2.90909C1.30244 0 0 1.30244 0 2.90909V20.3636C0 21.9703 1.30244 23.2727 2.90909 23.2727H29.0909C30.6976 23.2727 32 21.9703 32 20.3636V2.90909C32 1.30244 30.6976 0 29.0909 0Z"
-                  fill="url(#paint0_linear_purple_card_1)"
->>>>>>> 5bde97d1a61016a0e27e5d7204bd814c7e1e2e20
                 />
                 <path
                   fillRule="evenodd"
                   clipRule="evenodd"
                   d="M29.0909 0H2.90909C2.52332 0 2.15223 0.0738135 1.79583 0.221441C1.43942 0.369069 1.12483 0.579272 0.852049 0.852054L13.943 13.943C14.2157 14.2157 14.5303 14.4259 14.8867 14.5735C15.2431 14.7212 15.6142 14.7951 16 14.7951C16.3857 14.7951 16.7568 14.7212 17.1133 14.5735C17.4696 14.4259 17.7842 14.2157 18.057 13.943L31.1479 0.852049C30.8752 0.57927 30.5606 0.369067 30.2042 0.22144C29.8478 0.0738131 29.4767 0 29.0909 0Z"
-<<<<<<< HEAD
                   fill={`url(#paint1_linear_red_1_${animationId})`}
                 />
               </g>
             ))}
 
-=======
-                  fill="url(#paint1_linear_purple_card_1)"
-                />
-              </g>
-            </g>
->>>>>>> 5bde97d1a61016a0e27e5d7204bd814c7e1e2e20
             <defs>
               <linearGradient
                 id="paint0_linear_card_1"
@@ -418,13 +376,8 @@ export default function FirstMonitor() {
                 y2="23.2727"
                 gradientUnits="userSpaceOnUse"
               >
-<<<<<<< HEAD
                 <stop stopColor="#29B4FA" />
                 <stop offset="1" stopColor="#29B4FA" />
-=======
-                <stop stopColor="#FAC227" />
-                <stop offset="1" stopColor="#FAA627" />
->>>>>>> 5bde97d1a61016a0e27e5d7204bd814c7e1e2e20
               </linearGradient>
 
               <linearGradient
@@ -433,35 +386,10 @@ export default function FirstMonitor() {
                 y1="0"
                 x2="16.0002"
                 y2="14.7951"
-<<<<<<< HEAD
-=======
-                gradientUnits="userSpaceOnUse"
-              >
-                <stop stopColor="#FCE4B1" />
-                <stop offset="1" stopColor="#FFD272" />
-              </linearGradient>
-              <linearGradient
-                id="paint0_linear_purple_card_1"
-                x1="16"
-                y1="0"
-                x2="16"
-                y2="23.2727"
->>>>>>> 5bde97d1a61016a0e27e5d7204bd814c7e1e2e20
                 gradientUnits="userSpaceOnUse"
               >
                 <stop stopColor="#AFE6FD" />
                 <stop offset="1" stopColor="#70C8FF" />
-              </linearGradient>
-              <linearGradient
-                id="paint1_linear_purple_card_1"
-                x1="16.0002"
-                y1="0"
-                x2="16.0002"
-                y2="14.7951"
-                gradientUnits="userSpaceOnUse"
-              >
-                <stop stopColor="#c0affd" />
-                <stop offset="1" stopColor="#9163fd" />
               </linearGradient>
             </defs>
           </svg>
