@@ -1,18 +1,22 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import Card from "../components/Card";
 import SwitchToggle from "../components/SwitchToggle";
 import { getConnection } from "../signalRConnection";
-import publicZone from "../assets/Publiczone.PNG";
+import publicZone from "../assets/public-zone.png";
 
 export default function FirstMonitor() {
-  const time = 4000;
+  const time = 2000;
   const [message, setMessage] = useState("");
   const [isRealTimeMonitoring, setIsRealTimeMonitoring] = useState(true);
 
   const isRealTimeRef = useRef(isRealTimeMonitoring);
+  const messageRef = useRef(message);
   const prevSendAnimationsRef = useRef<number[]>([]);
   const prevReceiveAnimationsRef = useRef<number[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const spamTimeoutRef = useRef<number | null>(null);
+  const spamIntervalRef = useRef<number | null>(null);
+  const sendAnimationCounterRef = useRef(0);
 
   const [activeSendAnimations, setActiveSendAnimations] = useState<number[]>(
     []
@@ -22,15 +26,18 @@ export default function FirstMonitor() {
   >([]);
 
   const [lastMessage, setLastMessage] = useState<string>("");
-
-  const [sendAnimationCounter, setSendAnimationCounter] = useState(0);
   const [receiveAnimationCounter, setReceiveAnimationCounter] = useState(0);
 
   const connection = getConnection();
 
+  // Keep refs in sync with state
   useEffect(() => {
     isRealTimeRef.current = isRealTimeMonitoring;
   }, [isRealTimeMonitoring]);
+
+  useEffect(() => {
+    messageRef.current = message;
+  }, [message]);
 
   // Force Start Send Animations
   useEffect(() => {
@@ -123,45 +130,95 @@ export default function FirstMonitor() {
     };
   }, [receiveAnimationCounter]);
 
-  const startSendMessage = async (msgToSend: string) => {
-    if (connection.state === "Connected") {
-      try {
-        await connection.invoke("SendMessage", msgToSend);
-      } catch (err) {
-        console.error("Send failed", err);
+  const startSendMessage = useCallback(
+    async (msgToSend: string) => {
+      if (connection.state === "Connected") {
+        try {
+          await connection.invoke("SendMessage", msgToSend);
+        } catch (err) {
+          console.error("Send failed", err);
+        }
       }
-    }
-  };
+    },
+    [connection]
+  );
 
-  const handleSend = async () => {
-    if (!message.trim()) return;
-    const currentMsg = message;
+  // Stable handleSend using refs
+  const handleSend = useCallback(async () => {
+    const currentMsg = messageRef.current;
+    if (!currentMsg.trim()) return;
 
-    const newAnimationId = sendAnimationCounter + 1;
-    setSendAnimationCounter(newAnimationId);
+    // Use ref for counter to avoid stale closures
+    sendAnimationCounterRef.current += 1;
+    const newAnimationId = sendAnimationCounterRef.current;
 
-    // اضافه کردن انیمیشن جدید
     setActiveSendAnimations((prev) => [...prev, newAnimationId]);
 
-    // اگر حالت واقعی نیست، با تاخیر ارسال شود
+    const isRealTime = isRealTimeRef.current;
+
     setTimeout(
       async () => {
         await startSendMessage(currentMsg);
-
-        // حذف انیمیشن پس از اتمام
         setActiveSendAnimations((prev) =>
           prev.filter((id) => id !== newAnimationId)
         );
       },
-      isRealTimeMonitoring ? 0 : time
+      isRealTime ? 0 : time
     );
-  };
+  }, [startSendMessage]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSend();
+  // Cleanup function for spam timers
+  const stopSpam = useCallback(() => {
+    if (spamTimeoutRef.current) {
+      clearTimeout(spamTimeoutRef.current);
+      spamTimeoutRef.current = null;
     }
-  };
+    if (spamIntervalRef.current) {
+      clearInterval(spamIntervalRef.current);
+      spamIntervalRef.current = null;
+    }
+  }, []);
+
+  const handleKeyDownInput = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key !== "Enter") return;
+
+      // Prevent OS key repeat - we handle our own repeat
+      if (e.repeat) return;
+
+      e.preventDefault();
+
+      // 1. Send immediately on first press
+      handleSend();
+
+      // 2. Start spam after delay (500ms)
+      spamTimeoutRef.current = window.setTimeout(() => {
+        // 3. Start spam loop (every 100ms)
+        spamIntervalRef.current = window.setInterval(() => {
+          handleSend();
+        }, 100);
+      }, 500);
+    },
+    [handleSend]
+  );
+
+  const handleKeyUpInput = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        stopSpam();
+      }
+    },
+    [stopSpam]
+  );
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopSpam();
+    };
+  }, [stopSpam]);
+
+  // Auto focus input
   useEffect(() => {
     const focusInput = () => {
       inputRef.current?.focus();
@@ -185,11 +242,12 @@ export default function FirstMonitor() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
+
   return (
-    <div className="flex flex-col h-screen w-full pr-2 lg:pr-0  overflow-hidden">
+    <div className="flex flex-col h-screen w-full pr-2 lg:pr-0 overflow-hidden">
       <div className="h-40 flex items-center lg:pr-25 justify-between">
         <SwitchToggle
-          value={!isRealTimeMonitoring} // تغییر initial به value
+          value={!isRealTimeMonitoring}
           toggle={(val) => setIsRealTimeMonitoring(!val)}
           fromColor="#F43F5E"
           toColor="#C70A2E"
@@ -199,58 +257,63 @@ export default function FirstMonitor() {
           glowColor="#F43F5E"
           className="w-80 flex items-center justify-center h-30 gap-10"
         >
-          <p className="text-2xl font-bold">سپر بیرونی</p>
-          <div className="w-15 h-15 mb-2">
-            <img src={publicZone} alt="secure zone" />
-          </div>
+          <p className="text-2xl font-bold">Public zone</p>
         </Card>
       </div>
       <div className="h-30" />
 
-      {/* تغییرات layout اصلی برای قرینه شدن */}
       <div className="flex items-center h-full lg:mr-25">
-        {/* ۱. کارت سمت چپ (قرینه کارت سمت راست در مانیتور ۲) */}
-        {/* ml-28 اضافه شد که قرینه mr-28 در مانیتور ۲ است */}
-        <Card glowColor="#F43F5E">
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              placeholder="پیام خود را اینجا بنویسید..."
-              className="w-2/3 p-3 rounded-md bg-black/30 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-[#F43F5E]"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={handleKeyDown}
-              ref={inputRef}
-            />
-
-            <button
-              onClick={handleSend}
-              className="h-11.5 w-1/3 py-2 text-xs font-semibold rounded-md transition-colors bg-[#F43F5E] hover:bg-[#F43F5E] text-black"
-            >
-              ارسال پیام
-            </button>
+        <div>
+          <div className="w-40 h-40 absolute top-[30%] right-[9.5%] mb-2">
+            <img src={publicZone} alt="public zone" />
           </div>
 
-          <div className="mt-3 min-h-25 max-h-60 overflow-auto p-3 rounded-md bg-black/20 border border-white/10 text-white flex items-center justify-center">
-            {!lastMessage ? (
-              <div className="text-sm text-white/50">هیچ پیامی وجود ندارد.</div>
-            ) : (
-              <div className="text-2xl font-medium text-center animate-pulse">
-                {lastMessage}
-              </div>
-            )}
-          </div>
-        </Card>
+          {lastMessage && (
+            <div className="absolute bg-[#F43F5E] w-70 h-70 blur-[90px] lg:top-[47%] lg:right-[6%] md:top-[45%] rounded-full z-0 animate-pulse" />
+          )}
+          <Card glowColor="#F43F5E">
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="پیام خود را اینجا بنویسید..."
+                className="w-2/3 p-3 rounded-md bg-black/30 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-[#F43F5E]"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={handleKeyDownInput}
+                onKeyUp={handleKeyUpInput}
+                ref={inputRef}
+              />
+
+              <button
+                onClick={handleSend}
+                className="h-11.5 w-1/3 py-2 text-xs font-semibold rounded-md transition-colors bg-[#F43F5E] hover:bg-[#F43F5E] text-black"
+              >
+                ارسال پیام
+              </button>
+            </div>
+
+            <div className="mt-3 min-h-25 max-h-60 overflow-auto p-3 rounded-md bg-black/20 border border-white/10 text-white flex items-center justify-center">
+              {!lastMessage ? (
+                <div className="text-sm text-white/50">
+                  هیچ پیامی وجود ندارد.
+                </div>
+              ) : (
+                <div className="text-2xl font-medium text-center animate-pulse">
+                  {lastMessage?.length > 10
+                    ? lastMessage.slice(0, 10) + "..."
+                    : lastMessage}
+                </div>
+              )}
+            </div>
+          </Card>
+        </div>
         <div className="flex-1 w-full max-w-[1500px] flex items-center justify-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            // تغییرات مهم برای ریسپانسیو بودن:
             width="100%"
             height="auto"
-            // viewBox بر اساس مختصات واقعی مسیرها (H1425) تنظیم شده است
             viewBox="0 0 1425 519"
             fill="none"
-            // حفظ نسبت ابعاد تصویر
             preserveAspectRatio="xMidYMid meet"
           >
             <path
@@ -270,11 +333,13 @@ export default function FirstMonitor() {
               fill="white"
             />
             <path d="M144 10V73.5" stroke="white" strokeWidth="4" />
-            <path
-              d="M75.7025 476.032C74.5272 476.831 74.5373 478.567 75.7218 479.352L123.569 511.084C124.903 511.969 126.683 511.006 126.674 509.406L126.302 445.388C126.293 443.787 124.501 442.846 123.177 443.746L75.7025 476.032Z"
-              fill="white"
-            />
-            <path d="M73.4774 446V509.5" stroke="white" strokeWidth="4" />
+            <g transform="translate(20, 0)">
+              <path
+                d="M75.7025 476.032C74.5272 476.831 74.5373 478.567 75.7218 479.352L123.569 511.084C124.903 511.969 126.683 511.006 126.674 509.406L126.302 445.388C126.293 443.787 124.501 442.846 123.177 443.746L75.7025 476.032Z"
+                fill="white"
+              />
+              <path d="M73.4774 446V509.5" stroke="white" strokeWidth="4" />
+            </g>
 
             {/* Send Animation (Blue) */}
             {activeSendAnimations.map((animationId) => (

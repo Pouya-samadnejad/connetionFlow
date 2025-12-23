@@ -2,10 +2,10 @@ import { useEffect, useState, useRef } from "react";
 import Card from "../components/Card";
 import SwitchToggle from "../components/SwitchToggle";
 import { getConnection2 } from "../signalRConnection";
-import secureZone from "../assets/SecureZone.PNG";
+import secureZone from "../assets/SecureZone.png";
 
 export default function SecondMonitor() {
-  const time = 4000;
+  const time = 2000;
   const [message, setMessage] = useState("");
   const [isRealTimeMonitoring, setIsRealTimeMonitoring] = useState(true);
 
@@ -20,6 +20,9 @@ export default function SecondMonitor() {
 
   const isRealTimeRef = useRef(isRealTimeMonitoring);
   const inputRef = useRef<HTMLInputElement>(null);
+  const spamTimeoutRef = useRef<number | null>(null);
+  const spamIntervalRef = useRef<number | null>(null);
+  const messageRef = useRef(message);
 
   const prevSendAnimationsRef = useRef<number[]>([]);
   const prevReceiveAnimationsRef = useRef<number[]>([]);
@@ -31,7 +34,9 @@ export default function SecondMonitor() {
   useEffect(() => {
     isRealTimeRef.current = isRealTimeMonitoring;
   }, [isRealTimeMonitoring]);
-
+  useEffect(() => {
+    messageRef.current = message;
+  }, [message]);
   // Force شروع انیمیشن‌های ارسال
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -128,9 +133,10 @@ export default function SecondMonitor() {
   };
 
   const handleSend = async () => {
-    if (!message.trim()) return;
+    // تغییر مهم: خواندن از Ref
+    const currentMsg = messageRef.current;
 
-    const currentMsg = message;
+    if (!currentMsg.trim()) return;
 
     if (isRealTimeMonitoring) {
       await startSendMessage(currentMsg);
@@ -148,11 +154,41 @@ export default function SecondMonitor() {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDownInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== "Enter") return;
+
+    // جلوگیری از تکرار پیش‌فرض سیستم عامل (بسیار مهم)
+    if (e.repeat) return;
+
+    e.preventDefault();
+
+    // 1. ارسال پیام در لحظه اول فشار دادن
+    handleSend();
+
+    // 2. تنظیم تایمر برای شروع اسپم بعد از 1 ثانیه
+    spamTimeoutRef.current = window.setTimeout(() => {
+      // 3. شروع حلقه اسپم (هر 100 میلی ثانیه)
+      spamIntervalRef.current = window.setInterval(() => {
+        handleSend();
+      }, 100);
+    }, 1000); // زمان انتظار قبل از شروع اسپم
+  };
+
+  const handleKeyUpInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      handleSend();
+      // پاک کردن تمام تایمرها به محض رها کردن کلید
+      if (spamTimeoutRef.current) {
+        clearTimeout(spamTimeoutRef.current);
+        spamTimeoutRef.current = null;
+      }
+
+      if (spamIntervalRef.current) {
+        clearInterval(spamIntervalRef.current);
+        spamIntervalRef.current = null;
+      }
     }
   };
+
   useEffect(() => {
     const focusInput = () => {
       inputRef.current?.focus();
@@ -184,10 +220,7 @@ export default function SecondMonitor() {
           glowColor="#14E800"
           className="w-80 flex items-center justify-center h-30 gap-10"
         >
-          <p className="text-2xl font-bold">سپر درونی</p>
-          <div className="w-15 h-15 mb-2">
-            <img src={secureZone} alt="secure zone" />
-          </div>
+          <p className="text-2xl font-bold">Secure zone</p>
         </Card>
         <SwitchToggle
           value={!isRealTimeMonitoring} // تغییر initial به value
@@ -224,11 +257,14 @@ export default function SecondMonitor() {
               stroke="white"
               strokeWidth="4"
             />
-            <path
-              d="M1283.23 478.968C1282.05 478.169 1282.06 476.433 1283.24 475.648L1331.09 443.916C1332.43 443.031 1334.21 443.994 1334.2 445.594L1333.82 509.612C1333.82 511.213 1332.02 512.154 1330.7 511.254L1283.23 478.968Z"
-              fill="white"
-            />
-            <path d="M1281 509V445.5" stroke="white" strokeWidth="4" />
+            <g transform="translate(20, 0)">
+              <path
+                d="M1283.23 478.968C1282.05 478.169 1282.06 476.433 1283.24 475.648L1331.09 443.916C1332.43 443.031 1334.21 443.994 1334.2 445.594L1333.82 509.612C1333.82 511.213 1332.02 512.154 1330.7 511.254L1283.23 478.968Z"
+                fill="white"
+              />
+              <path d="M1281 509V445.5" stroke="white" stroke-width="4" />
+            </g>
+
             <path
               d="M1349.3 42.9683C1350.47 42.1691 1350.46 40.4333 1349.28 39.6478L1301.43 7.91582C1300.1 7.03124 1298.32 7.99376 1298.33 9.59421L1298.7 73.6123C1298.71 75.2127 1300.5 76.1545 1301.82 75.2544L1349.3 42.9683Z"
               fill="white"
@@ -351,36 +387,48 @@ export default function SecondMonitor() {
           </svg>
         </div>
 
-        {/* Controls / Message Card */}
-        <Card glowColor="#14E800">
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              placeholder="پیام خود را اینجا بنویسید..."
-              className="w-2/3 p-3 rounded-md bg-black/30 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-600"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={handleKeyDown}
-              ref={inputRef}
-            />
+        <div>
+          <div className="w-40 h-40 absolute top-[30%] left-[9.5%] mb-2">
+            <img src={secureZone} alt="secure zone" />
+          </div>
+          {lastMessage && (
+            <div className="absolute bg-green-600 w-70 h-70 blur-[90px] lg:top-[47%] lg:left-[6%] md:top-[45%] md:left-[4%] rounded-full z-0 animate-pulse" />
+          )}
+          <Card glowColor="#14E800">
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="پیام خود را اینجا بنویسید..."
+                className="w-2/3 p-3 rounded-md bg-black/30 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-600"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={handleKeyDownInput}
+                onKeyUp={handleKeyUpInput}
+                ref={inputRef}
+              />
 
-            <button
-              onClick={handleSend}
-              className="h-11.5 w-1/3 py-2 text-xs bg-green-600 text-black font-semibold rounded-md hover:bg-green-700 transition-colors cursor-pointer"
-            >
-              ارسال پیام
-            </button>
-          </div>
-          <div className="mt-3 min-h-25 overflow-auto p-3 rounded-md bg-black/20 border border-white/10 text-white flex items-center justify-center">
-            {!lastMessage ? (
-              <div className="text-sm text-white/50">هیچ پیامی وجود ندارد.</div>
-            ) : (
-              <div className="text-2xl font-medium text-center animate-pulse">
-                {lastMessage}
-              </div>
-            )}
-          </div>
-        </Card>
+              <button
+                onClick={handleSend}
+                className="h-11.5 w-1/3 py-2 text-xs bg-green-600 text-black font-semibold rounded-md hover:bg-green-700 transition-colors cursor-pointer"
+              >
+                ارسال پیام
+              </button>
+            </div>
+            <div className="mt-3 min-h-25 overflow-auto p-3 rounded-md bg-black/20 border border-white/10 text-white flex items-center justify-center">
+              {!lastMessage ? (
+                <div className="text-sm text-white/50">
+                  هیچ پیامی وجود ندارد.
+                </div>
+              ) : (
+                <div className="text-2xl font-medium text-center animate-pulse">
+                  {lastMessage?.length > 10
+                    ? lastMessage.slice(0, 10) + "..."
+                    : lastMessage}
+                </div>
+              )}
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );
