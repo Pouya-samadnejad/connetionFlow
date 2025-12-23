@@ -1,73 +1,48 @@
-# React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-Currently, two official plugins are available:
+🖥️ MonitorFlow: SignalR Visualizer
+A cutting-edge data visualization dashboard built with React 19 and the React Compiler. This application monitors and animates the flow of real-time data between dual-monitor interfaces using SignalR for low-latency synchronization.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+⚡ Tech Stack
+Framework: React 19 (utilizing the React Compiler for zero-memoization overhead).
 
-## React Compiler
+Real-time: SignalR (WebSockets).
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+Animations: Framer Motion (Layout transitions and SVG path following).
 
-Note: This will impact Vite dev & build performances.
+Styling: Tailwind CSS (Grid layouts and glassmorphism UI).
 
-## Expanding the ESLint configuration
+🎮 Visualization Modes
+The app features a sophisticated toggle system to switch between raw speed and logical tracing:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. 🚀 Real-time Mode
+Focus: Raw Performance.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Mechanism: Direct state updates optimized by the React Compiler.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Visuals: Instantaneous status changes on the monitor endpoints. Best for high-velocity environments where every millisecond counts.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+2. 🌀 Animation Mode
+Focus: Path Discovery & Debugging.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Mechanism: Framer Motion layoutId and path properties.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Visuals: Watch as message "packets" physically travel along SVG curves.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
+Flow: Monitor A → Messaging Handle → Logic Gate → Monitor B.
+
+🛠️ Implementation Details
+React 19 & Compiler
+By leveraging the React Compiler, this project eliminates the need for manual useMemo and useCallback. This ensures that the heavy SVG path calculations for the Animation Mode do not interfere with the SignalR socket performance.
+
+SignalR Logic
+The messaging handles act as listeners. When a payload arrives via SignalR:
+
+The SignalR hub broadcasts the message.
+
+The UI identifies the source/destination handles.
+
+In Animation Mode, the packet is dynamically routed through these coordinates.
       // other options...
     },
   },
